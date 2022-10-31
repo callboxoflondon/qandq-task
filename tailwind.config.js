@@ -5,7 +5,18 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      transitionProperty: {
+        width: "width",
+        height: "height",
+      },
+      colors: {
+        primary: "#222831",
+        secondary: "#00ADB5",
+        tertiary: "#393E46",
+        quaternary: "#EEEEEE",
+      },
+    },
   },
   plugins: [],
 };
