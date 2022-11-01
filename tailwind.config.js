@@ -15,6 +15,10 @@ module.exports = {
         secondary: "#00ADB5",
         tertiary: "#393E46",
         quaternary: "#EEEEEE",
+        bYellow: "#F7DE3A",
+      },
+      screens: {
+        xmd: "450px",
       },
     },
   },
