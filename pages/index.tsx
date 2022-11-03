@@ -1,18 +1,17 @@
 import Head from "next/head";
 import Layout from "../components/Layout";
 import MovieCard from "../components/MovieCard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ActivityIndicator from "../components/ActivityIndicator";
 
 export default function Home({ movieRes }: { movieRes: MovieFetchData }) {
   const [movies, setMovies] = useState<Movie[]>(movieRes.results);
-  const [page, setPage] = useState<number>(2);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  let page = 2;
+  let hasMore = movieRes.page < movieRes.total_pages;
   const [loading, setLoading] = useState<boolean>(false);
-  let canFetch = true;
 
-  async function fetchMoreMovies(): Promise<void> {
-    if (!canFetch) return;
+  function fetchMoreMovies(): void {
+    if (loading) return;
     const bottomLeft =
       document.documentElement.scrollHeight -
       document.documentElement.scrollTop -
@@ -21,11 +20,13 @@ export default function Home({ movieRes }: { movieRes: MovieFetchData }) {
     if (!hasMore) return;
 
     setLoading(true);
-    const res = await fetchPopularMovies(page);
-    setMovies((prev) => [...prev, ...res.results]);
-    setPage((prev) => prev + 1);
-    setHasMore(res.page < res.total_pages);
-    setLoading(false);
+
+    fetchPopularMovies(page).then((res) => {
+      setMovies((prev) => moviesNonDuplicate(prev, res.results));
+      hasMore = res.page < res.total_pages;
+      page++;
+      setLoading(() => false);
+    });
   }
 
   useEffect(() => {
@@ -36,6 +37,14 @@ export default function Home({ movieRes }: { movieRes: MovieFetchData }) {
     };
   }, []);
 
+  function moviesNonDuplicate(oldArray: Movie[], newArray: Movie[]): Movie[] {
+    const filteredNewArray = newArray.filter((newMovie) => {
+      return !oldArray.some((oldMovie) => oldMovie.id === newMovie.id);
+    });
+
+    return [...oldArray, ...filteredNewArray];
+  }
+
   return (
     <Layout>
       <Head>
@@ -43,8 +52,8 @@ export default function Home({ movieRes }: { movieRes: MovieFetchData }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="px-5 sm:px-10 ">
-        <div className="grid   gap-2 md:gap-4 lg:gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      <div className="px-5 md:pt-24 pt-20  sm:px-10 ">
+        <div className="grid  gap-2 md:gap-4 lg:gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {movies?.map((movie: Movie) => (
             <MovieCard key={movie.id} movieData={movie} />
           ))}
@@ -57,18 +66,16 @@ export default function Home({ movieRes }: { movieRes: MovieFetchData }) {
 
 async function fetchPopularMovies(page: number = 1): Promise<MovieFetchData> {
   return fetch(
-    `https://api.themoviedb.org/3/movie/popular?api_key=${"d6fed4670aa352a741511d46408354ab"}&page=${page}`
+    `${process.env.BASE_URL}movie/popular?api_key=${process.env.API_KEY}&page=${page}`
   ).then((res) => res.json());
 }
 
 export const getServerSideProps = async () => {
   const data = await fetchPopularMovies();
 
-  if (data) {
-    return {
-      props: {
-        movieRes: data,
-      },
-    };
-  }
+  return {
+    props: {
+      movieRes: data,
+    },
+  };
 };

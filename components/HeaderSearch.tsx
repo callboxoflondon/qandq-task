@@ -5,6 +5,9 @@ export default function HeaderSearch() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  let searchTimeout: NodeJS.Timeout;
 
   function toggleSearchAndFocus(): void {
     if (!searchOpen) {
@@ -18,6 +21,19 @@ export default function HeaderSearch() {
 
   function searchHandler(e: React.ChangeEvent<HTMLInputElement>): void {
     setSearchQuery(e.target.value);
+    if (e.target.value.length > 0) {
+      setLoading(true);
+      clearInterval(searchTimeout);
+      searchTimeout = setTimeout(async () => {
+        const res = await fetch(
+          `${process.env.BASE_URL}search/movie?api_key=${process.env.API_KEY}&query=${e.target.value}`
+        ).then((res) => res.json());
+
+        setMovies(res.results.slice(0, 2));
+
+        setLoading(false);
+      }, 500);
+    }
   }
 
   return (
@@ -39,7 +55,7 @@ export default function HeaderSearch() {
           onChange={searchHandler}
           className={
             "w-0 text-xs  md:text-base text-white transition-all duration-500  flex bg-opacity-50 focus:outline-none bg-tertiary ml-2  " +
-            (searchOpen && "w-32 md:w-52 lg:w-72 px-2 ")
+            (searchOpen && "w-36 md:w-52 lg:w-72 px-2 ")
           }
         ></input>
       </div>

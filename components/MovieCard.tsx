@@ -6,10 +6,10 @@ export default function MovieCard({ movieData }: { movieData: Movie }) {
   return (
     <div>
       <Link
-        href="/"
-        className="flex group   rounded-xl overflow-hidden  relative active:scale-[0.98] flex-col "
+        href={"/movie-detail/" + movieData.id + "?title=" + movieData.title}
+        className="flex group  rounded-xl overflow-hidden  relative active:scale-[0.98] flex-col "
       >
-        <div className="absolute group-hover:block hidden backdrop-blur-2xl z-10  text-xs text-center p-2 text-white">
+        <div className="absolute w-full h-full   group-hover:flex hidden backdrop-blur-2xl z-10  text-xs text-center p-2 text-white">
           {movieData.overview.slice(0, 200) + "..."}
         </div>
         <div className="flex truncate z-10 px-4 text-white flex-col absolute bottom-0 w-full bg-black bg-opacity-70 pt-1 pb-3">
@@ -24,7 +24,7 @@ export default function MovieCard({ movieData }: { movieData: Movie }) {
           <p className="w-full truncate">{movieData.title}</p>
         </div>
         <img
-          src={"https://image.tmdb.org/t/p/w500" + movieData.poster_path}
+          src={process.env.IMAGE_BASE + movieData.poster_path}
           alt=""
           className="object-contain w-full group-hover:backdrop-blur-3xl"
           loading="lazy"
