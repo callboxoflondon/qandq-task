@@ -19,14 +19,12 @@ export default function MovieDetail() {
   const { movieId, title } = router.query as UnionQueryType;
   const url = router.asPath;
 
-  console.log(url);
-
   useEffect(() => {
     if (router.isReady && movieId) {
       setFavorites(JSON.parse(localStorage.getItem("favorites") || "[]"));
       getMovieDetail();
     }
-  }, [router.isReady]);
+  }, [router.isReady, movieId]);
 
   function getMovieDetail(): void {
     setIsLoading(true);

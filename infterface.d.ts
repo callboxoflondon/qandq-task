@@ -22,7 +22,7 @@ interface MovieFetchData {
   total_results: number;
 }
 
-interface Comment {
+interface MovieComment {
   id: string;
   comment: string;
 }

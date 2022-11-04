@@ -1,5 +1,9 @@
+import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { ChangeEventHandler, useRef, useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import ActivityIndicator from "./ActivityIndicator";
+import SearchCard from "./SearchCard";
 
 export default function HeaderSearch() {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -7,7 +11,7 @@ export default function HeaderSearch() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [movies, setMovies] = useState<Movie[]>([]);
-  let searchTimeout: NodeJS.Timeout;
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout>();
 
   function toggleSearchAndFocus(): void {
     if (!searchOpen) {
@@ -15,6 +19,8 @@ export default function HeaderSearch() {
       inputRef.current?.focus();
     } else {
       setSearchOpen(false);
+      setMovies([]);
+      setSearchQuery("");
       inputRef.current?.blur();
     }
   }
@@ -24,15 +30,26 @@ export default function HeaderSearch() {
     if (e.target.value.length > 0) {
       setLoading(true);
       clearInterval(searchTimeout);
-      searchTimeout = setTimeout(async () => {
-        const res = await fetch(
-          `${process.env.BASE_URL}search/movie?api_key=${process.env.API_KEY}&query=${e.target.value}`
-        ).then((res) => res.json());
+      setSearchTimeout(
+        setTimeout(async () => {
+          fetch(
+            `${process.env.BASE_URL}search/movie?api_key=${process.env.API_KEY}&query=${e.target.value}`
+          )
+            .then(async (res) => {
+              const result = await res.json();
+              setMovies(result?.results ? result?.results.slice(0, 2) : []);
+              setLoading(false);
 
-        setMovies(res.results.slice(0, 2));
-
-        setLoading(false);
-      }, 500);
+              console.log(result);
+            })
+            .catch((err) => {
+              setLoading(false);
+              console.log(err);
+            });
+        }, 500)
+      );
+    } else {
+      clearInterval(searchTimeout);
     }
   }
 
@@ -55,21 +72,34 @@ export default function HeaderSearch() {
           onChange={searchHandler}
           className={
             "w-0 text-xs  md:text-base text-white transition-all duration-500  flex bg-opacity-50 focus:outline-none bg-tertiary ml-2  " +
-            (searchOpen && "w-36 md:w-52 lg:w-72 px-2 ")
+            (searchOpen && " w-40 md:w-52 lg:w-72 px-2 ")
           }
         ></input>
       </div>
       <div
         className={
-          "w-full flex flex-col items-center h-0 top-8 md:top-10 z-[1] transition-all  bg-tertiary bg-opacity-90 overflow-hidden rounded-b-3xl duration-150 absolute " +
-          (searchQuery.length > 0 && "h-64 border border-secondary")
+          "w-full flex h-0  justify-center items-center  top-8 md:top-10 z-[1] transition-all  bg-tertiary bg-opacity-90 overflow-hidden rounded-b-3xl duration-150 absolute " +
+          (searchQuery.length > 0 && "h-64 border  border-secondary")
         }
       >
-        <div className="w-full h-24 bg-red-400"></div>
-        <div className="w-full h-24 bg-blue-400"></div>
-        <button className="w-[60%] text-base rounded-lg h-10 mt-2 bg-red-400">
-          Daha fazla sonuç
-        </button>
+        {loading ? (
+          <ActivityIndicator />
+        ) : (
+          <div className="w-full flex flex-col z-10 items-center space-y-2">
+            {movies.map((movie) => (
+              <SearchCard key={movie.id} movieData={movie} />
+            ))}
+
+            {movies.length === 0 && "Sonuç bulunamadı"}
+
+            <Link
+              href={"/search?name=" + searchQuery}
+              className="w-[60%] text-base  rounded-lg py-2  text-center text  bg-secondary text-white"
+            >
+              More...
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

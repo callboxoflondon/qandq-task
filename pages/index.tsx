@@ -16,7 +16,7 @@ export default function Home({ movieRes }: { movieRes: MovieFetchData }) {
       document.documentElement.scrollHeight -
       document.documentElement.scrollTop -
       document.documentElement.clientHeight;
-    if (bottomLeft > 0) return;
+    if (bottomLeft > 100) return;
     if (!hasMore) return;
 
     setLoading(true);
@@ -53,7 +53,7 @@ export default function Home({ movieRes }: { movieRes: MovieFetchData }) {
       </Head>
 
       <div className="px-5 md:pt-24 pt-20  sm:px-10 ">
-        <div className="grid  gap-2 md:gap-4 lg:gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid   gap-2 md:gap-4 lg:gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {movies?.map((movie: Movie) => (
             <MovieCard key={movie.id} movieData={movie} />
           ))}
