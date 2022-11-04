@@ -25,7 +25,7 @@ Install packages
 Run server
 
 ```bash
-  npm run start
+  npm run dev
 ```
 
   
